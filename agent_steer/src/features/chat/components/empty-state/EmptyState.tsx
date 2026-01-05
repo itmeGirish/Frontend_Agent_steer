@@ -1,139 +1,168 @@
-import { cn } from '../../../../utils/cn'
-import type { EmptyStateProps, QuickPrompt } from './EmptyState.types'
 import { 
   Sparkles, 
-  Code, 
-  FileText, 
-  Lightbulb, 
-  PenTool,
-  BarChart,
-  Globe,
-  Zap
+  User, 
+  Key,
+  Paperclip,
+  Mic,
+  CornerDownLeft,
+  Users,
+  MessageCircle,
+  FileEdit,
+  Scale,
+  X,
+  Mail,
+  Calendar,
+  FolderOpen,
+  FileText
 } from 'lucide-react'
 
-// Default quick prompts
-const defaultQuickPrompts: QuickPrompt[] = [
-  {
-    id: '1',
-    icon: 'code',
-    title: 'Write Code',
-    prompt: 'Help me write a function that',
+interface EmptyStateProps {
+  onSend?: (message: string) => void
+}
+
+const agents = [
+  { 
+    icon: Users, 
+    label: 'Customer Proactive Agent', 
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50'
   },
-  {
-    id: '2',
-    icon: 'filetext',
-    title: 'Summarize Text',
-    prompt: 'Summarize the following text:',
+  { 
+    icon: MessageCircle, 
+    label: 'WhatsApp Agent', 
+    color: 'text-green-500',
+    bgColor: 'bg-green-50'
   },
-  {
-    id: '3',
-    icon: 'lightbulb',
-    title: 'Brainstorm Ideas',
-    prompt: 'Give me 10 creative ideas for',
+  { 
+    icon: FileEdit, 
+    label: 'Drafting Agent', 
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50'
   },
-  {
-    id: '4',
-    icon: 'pentool',
-    title: 'Write Content',
-    prompt: 'Write a blog post about',
-  },
-  {
-    id: '5',
-    icon: 'barchart',
-    title: 'Analyze Data',
-    prompt: 'Help me analyze this data:',
-  },
-  {
-    id: '6',
-    icon: 'globe',
-    title: 'Translate',
-    prompt: 'Translate the following to',
+  { 
+    icon: Scale, 
+    label: 'Law Agent', 
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-50'
   },
 ]
 
-// Icon mapping
-const iconMap: Record<string, React.ReactNode> = {
-  code: <Code className="w-5 h-5" />,
-  filetext: <FileText className="w-5 h-5" />,
-  lightbulb: <Lightbulb className="w-5 h-5" />,
-  pentool: <PenTool className="w-5 h-5" />,
-  barchart: <BarChart className="w-5 h-5" />,
-  globe: <Globe className="w-5 h-5" />,
-  zap: <Zap className="w-5 h-5" />,
-}
-
-export function EmptyState({
-  userName,
-  quickPrompts = defaultQuickPrompts,
-  onPromptClick,
-}: EmptyStateProps) {
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 18) return 'Good afternoon'
-    return 'Good evening'
+export function EmptyState({ onSend }: EmptyStateProps) {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const input = form.elements.namedItem('message') as HTMLTextAreaElement
+    if (input.value.trim() && onSend) {
+      onSend(input.value.trim())
+      input.value = ''
+    }
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
-      {/* Logo/Icon */}
-      <div className="mb-6">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-          <Sparkles className="w-8 h-8 text-white" />
+    <div className="flex-1 flex flex-col items-center px-4 pt-20 bg-white">
+      {/* Title */}
+      <h1 className="text-[42px] font-semibold text-gray-900 mb-10 tracking-tight">
+        Genspark AI Workspace
+      </h1>
+
+      {/* Input Box */}
+      <form onSubmit={handleSubmit} className="w-full max-w-[720px] mb-4">
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)] overflow-hidden">
+          {/* Text input */}
+          <textarea
+            name="message"
+            placeholder="Ask anything, create anything"
+            rows={2}
+            className="w-full px-5 pt-5 pb-3 bg-transparent text-gray-800 placeholder:text-gray-400 resize-none outline-none text-[15px] leading-relaxed"
+          />
+
+          {/* Bottom toolbar */}
+          <div className="flex items-center justify-between px-4 pb-4">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Personalize
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50 transition-colors flex items-center justify-center"
+              >
+                <Key className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                className="w-9 h-9 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center"
+              >
+                <Paperclip className="w-[18px] h-[18px]" />
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center"
+              >
+                <Mic className="w-[18px] h-[18px]" />
+              </button>
+              <button
+                type="submit"
+                className="w-9 h-9 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center"
+              >
+                <CornerDownLeft className="w-[18px] h-[18px]" />
+              </button>
+            </div>
+          </div>
         </div>
+      </form>
+
+      {/* Integration notice */}
+      <div className="flex items-center gap-3 text-sm mb-14">
+        <div className="flex items-center gap-1.5">
+          <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+            <Mail className="w-4 h-4 text-red-500" />
+          </div>
+          <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+            <Calendar className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+            <FolderOpen className="w-4 h-4 text-yellow-500" />
+          </div>
+          <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+            <FileText className="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+        <span className="text-gray-500">Genspark supports personalized tools</span>
+        <button className="text-gray-400 hover:text-gray-600">
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Greeting */}
-      <h1 className="text-3xl font-bold text-white mb-2">
-        {getGreeting()}{userName ? `, ${userName}` : ''}!
-      </h1>
-      <p className="text-slate-400 text-lg mb-8 text-center max-w-md">
-        How can I help you today? Choose a prompt below or type your own message.
-      </p>
-
-      {/* Quick Prompts Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-3xl">
-        {quickPrompts.map((prompt) => (
+      {/* Agent Cards Grid */}
+      <div className="grid grid-cols-4 gap-4 max-w-[720px] w-full">
+        {agents.map((agent) => (
           <button
-            key={prompt.id}
-            onClick={() => onPromptClick(prompt.prompt)}
-            className={cn(
-              'flex items-center gap-3 p-4 rounded-xl text-left',
-              'bg-slate-800/50 border border-slate-700/50',
-              'hover:bg-slate-800 hover:border-slate-600',
-              'transition-all duration-200',
-              'group'
-            )}
+            key={agent.label}
+            className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
           >
-            {/* Icon */}
-            <div className={cn(
-              'flex-shrink-0 w-10 h-10 rounded-lg',
-              'bg-slate-700 group-hover:bg-blue-500/20',
-              'flex items-center justify-center',
-              'text-slate-400 group-hover:text-blue-400',
-              'transition-colors'
-            )}>
-              {iconMap[prompt.icon] || <Zap className="w-5 h-5" />}
+            <div className={`w-14 h-14 rounded-2xl ${agent.bgColor} flex items-center justify-center`}>
+              <agent.icon className={`w-7 h-7 ${agent.color}`} />
             </div>
-
-            {/* Text */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-slate-200 group-hover:text-white transition-colors">
-                {prompt.title}
-              </h3>
-              <p className="text-sm text-slate-500 truncate">
-                {prompt.prompt}
-              </p>
-            </div>
+            <span className="text-sm text-gray-700 text-center font-medium leading-snug">
+              {agent.label}
+            </span>
           </button>
         ))}
       </div>
 
-      {/* Footer hint */}
-      <p className="text-slate-600 text-sm mt-8">
-        Press <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400 mx-1">Enter</kbd> to send a message
-      </p>
+      {/* For You tab */}
+      <div className="mt-14">
+        <button className="px-8 py-2.5 text-sm text-gray-700 border-b-2 border-gray-900 font-medium">
+          For You
+        </button>
+      </div>
     </div>
   )
 }

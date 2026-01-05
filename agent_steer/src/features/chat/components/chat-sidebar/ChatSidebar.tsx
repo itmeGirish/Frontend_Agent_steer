@@ -1,15 +1,20 @@
 import { useState } from 'react'
 import { cn } from '../../../../utils/cn'
 import type { ChatSidebarProps } from './ChatSidebar.types'
-import { Button } from '../../../../components/ui'
 import { 
-  Plus, 
-  MessageSquare, 
-  Trash2, 
+  Plus,
+  Minus,
   Search,
-  X,
-  PanelLeftClose,
-  PanelLeft
+  MessageSquare,
+  FolderOpen,
+  Compass,
+  Link2,
+  Gift,
+  User,
+  RefreshCw,
+  Globe,
+  Radio,
+  Megaphone
 } from 'lucide-react'
 
 export function ChatSidebar({
@@ -17,178 +22,146 @@ export function ChatSidebar({
   activeChatId,
   onNewChat,
   onSelectChat,
-  onDeleteChat,
   isCollapsed = false,
   onToggle,
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null)
 
-  // Filter chats by search query
-  const filteredChats = chats.filter(
-    (chat) =>
-      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  // Format date for display
-  const formatDate = (date: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-    if (days === 0) {
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    } else if (days === 1) {
-      return 'Yesterday'
-    } else if (days < 7) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' })
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
-    }
-  }
+  const tasks = [
+    {
+      id: '1',
+      icon: Globe,
+      title: 'Simple Website or Web App',
+      date: 'Thu, Dec 25, 2025'
+    },
+    {
+      id: '2', 
+      icon: Radio,
+      title: 'WhatsApp AI Broadcast Tool ...',
+      date: 'Thu, Nov 20, 2025'
+    },
+    {
+      id: '3',
+      icon: Megaphone,
+      title: 'WhatsApp AI Marketing Broa...',
+      date: 'Thu, Nov 20, 2025'
+    },
+  ]
 
   return (
-    <aside
-      className={cn(
-        'flex flex-col bg-slate-950 border-r border-slate-800 transition-all duration-300',
-        isCollapsed ? 'w-0 overflow-hidden' : 'w-72'
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-800">
-        <h2 className="text-lg font-semibold text-white">Chats</h2>
-        <div className="flex items-center gap-1">
-          {onToggle && (
-            <button
-              onClick={onToggle}
-              className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-              aria-label="Toggle sidebar"
-            >
-              {isCollapsed ? (
-                <PanelLeft className="w-5 h-5" />
-              ) : (
-                <PanelLeftClose className="w-5 h-5" />
-              )}
-            </button>
-          )}
+    <div className="flex h-full">
+      {/* Icon sidebar - Always visible */}
+      <aside className="flex flex-col bg-white border-r border-gray-100 w-[60px] flex-shrink-0">
+        {/* Top section */}
+        <div className="flex flex-col items-center gap-1 p-2 pt-3">
+          <button
+            onClick={onNewChat}
+            className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={onToggle}
+            className="w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center"
+          >
+            <Minus className="w-5 h-5" />
+          </button>
         </div>
-      </div>
 
-      {/* New Chat Button */}
-      <div className="p-3">
-        <Button
-          onClick={onNewChat}
-          leftIcon={<Plus className="w-4 h-4" />}
-          className="w-full justify-start"
-          variant="secondary"
-        >
-          New Chat
-        </Button>
-      </div>
+        {/* Navigation icons */}
+        <nav className="flex-1 flex flex-col items-center gap-1 py-4">
+          <button className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+            !isCollapsed ? "bg-blue-50 text-blue-500" : "text-gray-400 hover:bg-gray-100"
+          )}>
+            <FolderOpen className="w-5 h-5" />
+          </button>
+          <button className="w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center">
+            <MessageSquare className="w-5 h-5" />
+          </button>
+          <button className="w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center">
+            <Compass className="w-5 h-5" />
+          </button>
+          <button className="w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center">
+            <Link2 className="w-5 h-5" />
+          </button>
+        </nav>
 
-      {/* Search */}
-      <div className="px-3 pb-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search chats..."
-            className={cn(
-              'w-full pl-9 pr-8 py-2 rounded-lg',
-              'bg-slate-900 border border-slate-800',
-              'text-slate-100 placeholder:text-slate-500',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-              'transition-colors'
-            )}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-slate-500 hover:text-slate-300"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        {/* Bottom icons */}
+        <div className="flex flex-col items-center gap-1 p-2 pb-3 border-t border-gray-100">
+          <button className="w-10 h-10 rounded-xl text-orange-400 hover:bg-orange-50 transition-colors flex items-center justify-center">
+            <Gift className="w-5 h-5" />
+          </button>
+          <button className="w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center">
+            <User className="w-5 h-5" />
+          </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Chat List */}
-      <div className="flex-1 overflow-y-auto px-2">
-        {filteredChats.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            {searchQuery ? 'No chats found' : 'No chats yet'}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {filteredChats.map((chat) => (
-              <div
-                key={chat.id}
-                onMouseEnter={() => setHoveredChatId(chat.id)}
-                onMouseLeave={() => setHoveredChatId(null)}
-                onClick={() => onSelectChat(chat.id)}
-                className={cn(
-                  'group relative flex items-start gap-3 p-3 rounded-lg cursor-pointer',
-                  'transition-colors duration-150',
-                  activeChatId === chat.id
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-                )}
-              >
-                {/* Chat icon */}
-                <MessageSquare className="w-5 h-5 flex-shrink-0 mt-0.5" />
-
-                {/* Chat info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-medium truncate">{chat.title}</h3>
-                    <span className="text-xs text-slate-500 flex-shrink-0">
-                      {formatDate(chat.updatedAt)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-500 truncate mt-0.5">
-                    {chat.lastMessage}
-                  </p>
-                </div>
-
-                {/* Delete button (visible on hover) */}
-                {hoveredChatId === chat.id && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDeleteChat(chat.id)
-                    }}
-                    className={cn(
-                      'absolute right-2 top-1/2 -translate-y-1/2',
-                      'p-1.5 rounded-lg',
-                      'text-slate-500 hover:text-red-400 hover:bg-slate-800',
-                      'transition-colors'
-                    )}
-                    aria-label="Delete chat"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+      {/* Expanded panel - Collapsible */}
+      <div
+        className={cn(
+          'flex flex-col bg-white border-r border-gray-100 transition-all duration-300 overflow-hidden',
+          isCollapsed ? 'w-0' : 'w-[260px]'
         )}
-      </div>
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <h2 className="font-semibold text-gray-900">Task List</h2>
+          <div className="flex items-center gap-1">
+            <button className="w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center">
+              <RefreshCw className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={onToggle}
+              className="w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-slate-800">
-        <p className="text-xs text-slate-600 text-center">
-          {chats.length} conversation{chats.length !== 1 ? 's' : ''}
-        </p>
+        {/* Search */}
+        <div className="px-3 py-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search Chats"
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-gray-50 border-0 text-gray-800 placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Task List */}
+        <div className="flex-1 overflow-y-auto px-2">
+          {tasks.map((task) => (
+            <button
+              key={task.id}
+              onClick={() => onSelectChat(task.id)}
+              className={cn(
+                'w-full flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-colors',
+                activeChatId === task.id
+                  ? 'bg-gray-100'
+                  : 'hover:bg-gray-50'
+              )}
+            >
+              <task.icon className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">
+                  {task.title}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {task.date}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
-    </aside>
+    </div>
   )
 }

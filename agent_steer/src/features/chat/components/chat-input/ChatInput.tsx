@@ -1,42 +1,37 @@
 import { useState, useRef, useEffect } from 'react'
 import { cn } from '../../../../utils/cn'
 import type { ChatInputProps } from './ChatInput.types'
-import { Send, Paperclip } from 'lucide-react'
+import { Paperclip, Mic, CornerDownLeft } from 'lucide-react'
 
 export function ChatInput({
   onSend,
-  placeholder = 'Type your message...',
+  placeholder = 'Ask anything, create anything',
   disabled = false,
   isLoading = false,
 }: ChatInputProps) {
   const [message, setMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-resize textarea based on content
   useEffect(() => {
     const textarea = textareaRef.current
     if (textarea) {
       textarea.style.height = 'auto'
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`
     }
   }, [message])
 
-  // Handle send message
   const handleSend = () => {
     const trimmedMessage = message.trim()
     if (trimmedMessage && !disabled && !isLoading) {
       onSend(trimmedMessage)
       setMessage('')
-      // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
       }
     }
   }
 
-  // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Send on Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -44,32 +39,17 @@ export function ChatInput({
   }
 
   const isDisabled = disabled || isLoading
-  const canSend = message.trim().length > 0 && !isDisabled
 
   return (
-    <div className="border-t border-slate-700 bg-slate-900 p-4">
+    <div className="w-full max-w-2xl mx-auto">
       <div
         className={cn(
-          'flex items-end gap-3 rounded-xl border bg-slate-800 p-3',
-          'border-slate-700 focus-within:border-blue-500 transition-colors',
+          'flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm',
+          'focus-within:border-gray-300 focus-within:shadow-md transition-all',
           isDisabled && 'opacity-50'
         )}
       >
-        {/* Attach file button */}
-        <button
-          type="button"
-          disabled={isDisabled}
-          className={cn(
-            'flex-shrink-0 p-2 rounded-lg text-slate-400',
-            'hover:bg-slate-700 hover:text-slate-200 transition-colors',
-            'disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400'
-          )}
-          aria-label="Attach file"
-        >
-          <Paperclip className="w-5 h-5" />
-        </button>
-
-        {/* Textarea */}
+        {/* Input area */}
         <textarea
           ref={textareaRef}
           value={message}
@@ -79,33 +59,48 @@ export function ChatInput({
           disabled={isDisabled}
           rows={1}
           className={cn(
-            'flex-1 bg-transparent text-slate-100 placeholder:text-slate-500',
-            'resize-none outline-none min-h-[24px] max-h-[200px]',
-            'disabled:cursor-not-allowed'
+            'w-full px-4 pt-4 pb-2 bg-transparent text-gray-800 placeholder:text-gray-400',
+            'resize-none outline-none min-h-[48px] max-h-[150px] text-base'
           )}
         />
 
-        {/* Send button */}
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!canSend}
-          className={cn(
-            'flex-shrink-0 p-2 rounded-lg transition-colors',
-            canSend
-              ? 'bg-blue-500 text-white hover:bg-blue-600'
-              : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-          )}
-          aria-label="Send message"
-        >
-          <Send className="w-5 h-5" />
-        </button>
-      </div>
+        {/* Bottom toolbar */}
+        <div className="flex items-center justify-between px-3 pb-3">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={isDisabled}
+              className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              aria-label="Attach file"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              disabled={isDisabled}
+              className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              aria-label="Voice input"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+          </div>
 
-      {/* Helper text */}
-      <p className="text-xs text-slate-500 mt-2 text-center">
-        Press Enter to send, Shift + Enter for new line
-      </p>
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={isDisabled || !message.trim()}
+            className={cn(
+              'p-2 rounded-lg transition-colors',
+              message.trim()
+                ? 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-300'
+            )}
+            aria-label="Send message"
+          >
+            <CornerDownLeft className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
