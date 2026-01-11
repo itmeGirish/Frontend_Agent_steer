@@ -1,53 +1,26 @@
-import { 
-  Sparkles, 
-  User, 
+import {
+  User,
   Key,
   Paperclip,
   Mic,
   CornerDownLeft,
-  Users,
-  MessageCircle,
-  FileEdit,
-  Scale,
   X,
   Mail,
   Calendar,
   FolderOpen,
   FileText
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { getAllAgents } from '@/config/agents'
 
 interface EmptyStateProps {
   onSend?: (message: string) => void
 }
 
-const agents = [
-  { 
-    icon: Users, 
-    label: 'Customer Proactive Agent', 
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50'
-  },
-  { 
-    icon: MessageCircle, 
-    label: 'WhatsApp Agent', 
-    color: 'text-green-500',
-    bgColor: 'bg-green-50'
-  },
-  { 
-    icon: FileEdit, 
-    label: 'Drafting Agent', 
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50'
-  },
-  { 
-    icon: Scale, 
-    label: 'Law Agent', 
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-50'
-  },
-]
-
 export function EmptyState({ onSend }: EmptyStateProps) {
+  const navigate = useNavigate()
+  const agents = getAllAgents()
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
@@ -56,6 +29,10 @@ export function EmptyState({ onSend }: EmptyStateProps) {
       onSend(input.value.trim())
       input.value = ''
     }
+  }
+
+  const handleAgentClick = (agentId: string) => {
+    navigate(`/agents?type=${agentId}`)
   }
 
   return (
@@ -142,19 +119,23 @@ export function EmptyState({ onSend }: EmptyStateProps) {
 
       {/* Agent Cards Grid */}
       <div className="grid grid-cols-4 gap-4 max-w-[720px] w-full">
-        {agents.map((agent) => (
-          <button
-            key={agent.label}
-            className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
-          >
-            <div className={`w-14 h-14 rounded-2xl ${agent.bgColor} flex items-center justify-center`}>
-              <agent.icon className={`w-7 h-7 ${agent.color}`} />
-            </div>
-            <span className="text-sm text-gray-700 text-center font-medium leading-snug">
-              {agent.label}
-            </span>
-          </button>
-        ))}
+        {agents.map((agent) => {
+          const Icon = agent.icon
+          return (
+            <button
+              key={agent.id}
+              onClick={() => handleAgentClick(agent.id)}
+              className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
+            >
+              <div className={`w-14 h-14 rounded-2xl ${agent.bgColor} flex items-center justify-center`}>
+                <Icon className={`w-7 h-7 ${agent.color}`} />
+              </div>
+              <span className="text-sm text-gray-700 text-center font-medium leading-snug">
+                {agent.name}
+              </span>
+            </button>
+          )
+        })}
       </div>
 
       {/* For You tab */}

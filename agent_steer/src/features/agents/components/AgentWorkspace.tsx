@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { CopilotKit } from '@copilotkit/react-core';
-import { CopilotSidebar, type CopilotKitCSSProperties } from '@copilotkit/react-ui';
+import { CopilotChat, type CopilotKitCSSProperties } from '@copilotkit/react-ui';
 import { useFrontendTool, useRenderToolCall } from '@copilotkit/react-core';
 import '@copilotkit/react-ui/styles.css';
 
@@ -27,24 +27,45 @@ export function AgentWorkspace({ agent }: AgentWorkspaceProps) {
     setThemeColor(getThemeColorFromAgent(agent));
   }, [agent.id]);
 
-  // Hide CopilotKit version banner
+  // Hide CopilotKit version banner with CSS injection
   useEffect(() => {
+    // Inject CSS to hide the banner
+    const styleId = 'hide-copilotkit-banner';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        /* Hide CopilotKit dev inspector - target specific classes */
+        [data-copilotkit-dev-console],
+        [data-copilotkit-inspector],
+        [class*="copilotKitDevConsole"],
+        [class*="copilotKitInspector"],
+        [class*="CopilotKitDevConsole"],
+        /* Hide version announcement banner */
+        [class*="copilotKitBanner"],
+        [data-copilotkit-banner],
+        a[href*="copilotkit.ai"][target="_blank"] {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Hide CopilotKit dev inspector and announcements via DOM
     const hideBanner = () => {
-      const allElements = document.querySelectorAll('div, span, a');
-      allElements.forEach((el) => {
-        if (
-          el.textContent?.includes('CopilotKit v') &&
-          el.textContent?.includes('now live')
-        ) {
-          let parent = el.parentElement;
-          while (parent && parent.tagName !== 'BODY') {
-            if (parent.children.length <= 3) {
-              (parent as HTMLElement).style.display = 'none';
-              return;
-            }
-            parent = parent.parentElement;
+      // Find and hide the dev inspector/announcement by looking at fixed position elements
+      document.querySelectorAll('div').forEach((el) => {
+        const style = window.getComputedStyle(el);
+        if (style.position === 'fixed') {
+          const text = el.textContent || '';
+          // Only hide if it contains specific CopilotKit dev tool text
+          if (
+            (text.includes('CopilotKit v') && text.includes('now live')) ||
+            (text.includes('AG-UI Events') && text.includes('sample_agent')) ||
+            (text.includes('Inspector') && text.includes('Frontend Tools'))
+          ) {
+            (el as HTMLElement).style.display = 'none';
           }
-          (el as HTMLElement).style.display = 'none';
         }
       });
     };
@@ -52,6 +73,7 @@ export function AgentWorkspace({ agent }: AgentWorkspaceProps) {
     hideBanner();
     const timer1 = setTimeout(hideBanner, 100);
     const timer2 = setTimeout(hideBanner, 500);
+    const timer3 = setTimeout(hideBanner, 1000);
 
     const observer = new MutationObserver(hideBanner);
     observer.observe(document.body, { childList: true, subtree: true });
@@ -59,38 +81,57 @@ export function AgentWorkspace({ agent }: AgentWorkspaceProps) {
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
       observer.disconnect();
     };
   }, []);
-
-  const suggestions = agent.actions.slice(0, 4).map((action) => ({
-    title: action.label,
-    message: action.prompt,
-  }));
 
   return (
     <CopilotKit runtimeUrl="/api/copilotkit" agent={agent.copilotAgentName}>
       <div
         style={{ '--copilot-kit-primary-color': themeColor } as CopilotKitCSSProperties}
-        className="h-screen flex flex-col"
+        className="h-screen flex flex-col bg-white"
       >
         <AgentHeader agent={agent} />
         <div className="flex-1 flex overflow-hidden">
-          <CopilotSidebar
-            clickOutsideToClose={false}
-            defaultOpen={true}
-            labels={{
-              title: agent.name,
-              initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
-            }}
-            suggestions={suggestions}
-          >
+          {/* Main Content Area */}
+          <div className="flex-1 overflow-y-auto">
             <AgentMainContent
               agent={agent}
               themeColor={themeColor}
               setThemeColor={setThemeColor}
             />
-          </CopilotSidebar>
+          </div>
+          {/* CopilotKit Chat Panel */}
+          <div className="w-[400px] border-l border-gray-200 flex flex-col">
+            {/* Quick Action Buttons above Chat */}
+            <div className="p-3 border-b border-gray-200 bg-gray-50">
+              <p className="text-xs text-gray-500 mb-2 font-medium">Quick Actions</p>
+              <div className="flex flex-wrap gap-2">
+                {agent.actions.slice(0, 3).map((action) => (
+                  <button
+                    key={action.id}
+                    onClick={() => sendMessageToChat(action.prompt)}
+                    className="px-3 py-1.5 text-xs rounded-full border transition-colors hover:bg-gray-100"
+                    style={{
+                      borderColor: `${themeColor}40`,
+                      color: themeColor,
+                    }}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <CopilotChat
+              labels={{
+                title: agent.name,
+                initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
+              }}
+              instructions={`You are ${agent.name}. ${agent.description}`}
+              className="flex-1"
+            />
+          </div>
         </div>
       </div>
     </CopilotKit>

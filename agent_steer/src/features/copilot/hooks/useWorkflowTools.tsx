@@ -145,12 +145,20 @@ export function useWorkflowTools({ themeColor = '#6366f1' }: UseWorkflowToolsOpt
         { name: 'cover_letter', type: 'string', required: false },
       ],
       render: ({ args }) => {
-        if (args.full_name && args.position_applied) {
+        const name = args.name || '';
+        const email = args.email || '';
+        const mobile = args.mobile || '';
+        const full_name = args.full_name || '';
+        const position_applied = args.position_applied || '';
+        const years_of_experience = args.years_of_experience || 0;
+        const skills = args.skills || '';
+
+        if (full_name && position_applied) {
           workflowJobDataRef.current = {
-            full_name: args.full_name,
-            position_applied: args.position_applied,
-            years_of_experience: args.years_of_experience,
-            skills: args.skills,
+            full_name,
+            position_applied,
+            years_of_experience,
+            skills,
             resume_url: args.resume_url,
             cover_letter: args.cover_letter,
           };
@@ -167,20 +175,20 @@ export function useWorkflowTools({ themeColor = '#6366f1' }: UseWorkflowToolsOpt
                 Job Application Saved
               </p>
               <p className="text-xs text-gray-600">
-                Position: {args.position_applied} | Experience:{' '}
-                {args.years_of_experience} years
+                Position: {position_applied} | Experience:{' '}
+                {years_of_experience} years
               </p>
             </div>
             <WorkflowReviewForm
               themeColor={themeColor}
-              applicantName={args.full_name}
-              position={args.position_applied}
+              applicantName={full_name}
+              position={position_applied}
               onSubmit={(data: ReviewData) => {
                 workflowReviewSubmittedRef.current = true;
                 setWorkflowReviewSubmitted(true);
 
                 const loginData = workflowLoginDataRef.current;
-                const message = `Workflow review submitted: name=${loginData?.name || args.name}, email=${loginData?.email || args.email}, mobile=${loginData?.mobile || args.mobile}, full_name=${args.full_name}, position_applied=${args.position_applied}, years_of_experience=${args.years_of_experience}, skills=${args.skills}, availability=${data.availability}, expected_salary=${data.expected_salary}, willing_to_relocate=${data.willing_to_relocate}${args.resume_url ? `, resume_url=${args.resume_url}` : ''}${args.cover_letter ? `, cover_letter=${args.cover_letter}` : ''}`;
+                const message = `Workflow review submitted: name=${loginData?.name || name}, email=${loginData?.email || email}, mobile=${loginData?.mobile || mobile}, full_name=${full_name}, position_applied=${position_applied}, years_of_experience=${years_of_experience}, skills=${skills}, availability=${data.availability}, expected_salary=${data.expected_salary}, willing_to_relocate=${data.willing_to_relocate}${args.resume_url ? `, resume_url=${args.resume_url}` : ''}${args.cover_letter ? `, cover_letter=${args.cover_letter}` : ''}`;
                 sendMessageToChat(message);
               }}
             />
@@ -211,6 +219,17 @@ export function useWorkflowTools({ themeColor = '#6366f1' }: UseWorkflowToolsOpt
         { name: 'cover_letter', type: 'string', required: false },
       ],
       render: ({ args, status }) => {
+        const name = args.name || '';
+        const email = args.email || '';
+        const mobile = args.mobile || '';
+        const full_name = args.full_name || '';
+        const position_applied = args.position_applied || '';
+        const years_of_experience = args.years_of_experience || 0;
+        const skills = args.skills || '';
+        const availability = args.availability || '';
+        const expected_salary = args.expected_salary || '';
+        const willing_to_relocate = args.willing_to_relocate || '';
+
         if (status === 'executing') {
           return (
             <div className="p-5 bg-orange-100 rounded-lg text-center">
@@ -218,7 +237,7 @@ export function useWorkflowTools({ themeColor = '#6366f1' }: UseWorkflowToolsOpt
                 Submitting final application...
               </p>
               <p className="text-xs text-gray-600">
-                Applicant: {args.full_name} | Position: {args.position_applied}
+                Applicant: {full_name} | Position: {position_applied}
               </p>
             </div>
           );
@@ -226,22 +245,22 @@ export function useWorkflowTools({ themeColor = '#6366f1' }: UseWorkflowToolsOpt
 
         const completeData: WorkflowCompleteData = {
           user: {
-            name: args.name,
-            email: args.email,
-            mobile: args.mobile,
+            name,
+            email,
+            mobile,
           },
           job: {
-            full_name: args.full_name,
-            position_applied: args.position_applied,
-            years_of_experience: args.years_of_experience,
-            skills: args.skills,
+            full_name,
+            position_applied,
+            years_of_experience,
+            skills,
             resume_url: args.resume_url,
             cover_letter: args.cover_letter,
           },
           review: {
-            availability: args.availability,
-            expected_salary: args.expected_salary,
-            willing_to_relocate: args.willing_to_relocate,
+            availability,
+            expected_salary,
+            willing_to_relocate,
           },
         };
 

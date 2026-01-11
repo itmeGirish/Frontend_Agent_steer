@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 
 export function ChatSidebar({
-  chats,
+  chats: _chats,
   activeChatId,
   onNewChat,
   onSelectChat,

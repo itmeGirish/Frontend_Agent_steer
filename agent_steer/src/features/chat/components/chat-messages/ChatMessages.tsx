@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { cn } from '../../../../utils/cn'
 import type { ChatMessagesProps } from './ChatMessages.types'
 import { Bot } from 'lucide-react'
 

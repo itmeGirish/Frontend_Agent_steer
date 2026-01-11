@@ -12,9 +12,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy CopilotKit requests to LangGraph agent
+      // Proxy CopilotKit requests to local CopilotKit runtime server (connects to LangGraph at 8123)
       '/api/copilotkit': {
-        target: 'http://localhost:8123',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/copilotkit/, ''),
       },

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { LandingPage } from './pages/landing'
 import { ChatPage } from './pages/chat'
 import { CopilotChatPage } from './pages/copilot-chat'
+import { AgentsPage } from './pages/agents'
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/copilot" element={<CopilotChatPage />} />
+        <Route path="/agents" element={<AgentsPage />} />
         <Route path="*" element={<LandingPage />} />
       </Routes>
     </Router>

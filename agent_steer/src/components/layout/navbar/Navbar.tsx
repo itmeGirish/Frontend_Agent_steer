@@ -30,7 +30,7 @@ export function Navbar({ logo = 'Genspark', links = defaultLinks }: NavbarProps)
             {/* Links */}
             <div className="flex items-center gap-6">
               {links.map((link) => (
-                
+                <a
                   key={link.href}
                   href={link.href}
                   className="text-slate-400 hover:text-white transition-colors"
@@ -72,7 +72,7 @@ export function Navbar({ logo = 'Genspark', links = defaultLinks }: NavbarProps)
           <div className="px-4 py-4 space-y-4">
             {/* Links */}
             {links.map((link) => (
-              
+              <a
                 key={link.href}
                 href={link.href}
                 className="block text-slate-400 hover:text-white transition-colors py-2"
