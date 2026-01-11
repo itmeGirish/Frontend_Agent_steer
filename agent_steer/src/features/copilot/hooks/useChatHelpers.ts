@@ -98,12 +98,7 @@ export function sendMessageToChat(message: string): void {
           sendButton.removeAttribute('disabled');
         }
 
-        const clickEvent = new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        });
-        sendButton.dispatchEvent(clickEvent);
+        // Only click once - don't use both dispatchEvent and click()
         sendButton.click();
       } else {
         // Fallback: Enter key
