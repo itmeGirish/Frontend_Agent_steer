@@ -1,1 +1,0 @@
-export { LawWorkspace } from './LawWorkspace';

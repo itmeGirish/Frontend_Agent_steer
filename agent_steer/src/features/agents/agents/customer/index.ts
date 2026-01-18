@@ -1,1 +1,0 @@
-export { CustomerWorkspace } from './CustomerWorkspace';
