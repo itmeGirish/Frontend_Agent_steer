@@ -8,14 +8,13 @@ interface QuickActionButtonsProps {
 
 export function QuickActionButtons({ actions, themeColor }: QuickActionButtonsProps) {
   return (
-    <div className="p-3 border-t border-gray-200 bg-gray-50">
-      <p className="text-xs text-gray-500 mb-2">Quick Actions</p>
+    <div className="quick-actions-bar px-3 py-2 bg-white">
       <div className="flex flex-wrap gap-2">
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => sendMessageToChat(action.prompt)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
+            className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
             style={{
               backgroundColor: `${themeColor}15`,
               color: themeColor,

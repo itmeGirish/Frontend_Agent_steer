@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CopilotKit } from '@copilotkit/react-core'
 import { CopilotChat, type CopilotKitCSSProperties } from '@copilotkit/react-ui'
 import { useFrontendTool } from '@copilotkit/react-core'
@@ -7,8 +8,7 @@ import '@copilotkit/react-ui/styles.css'
 import type { AgentConfig } from '../../types'
 import { AgentHeader } from './AgentHeader'
 import { AgentActionButton } from './AgentActionButton'
-import { QuickActionButtons } from './QuickActionButtons'
-import { useHideCopilotBanner, useAutoScroll, useChatStyles, sendMessageToChat } from '../hooks'
+import { useHideCopilotBanner, useAutoScroll, useChatStyles, useQuickActionsInjection, useChatHistory, sendMessageToChat } from '../hooks'
 
 interface BaseAgentWorkspaceProps {
   agent: AgentConfig
@@ -36,6 +36,8 @@ function getThemeColor(agent: AgentConfig): string {
  * Provides standard layout with header, main content, and chat panel.
  */
 export function BaseAgentWorkspace({ agent, MainContent }: BaseAgentWorkspaceProps) {
+  const [searchParams] = useSearchParams()
+  const sessionId = searchParams.get('session')
   const [themeColor, setThemeColor] = useState(getThemeColor(agent))
 
   useEffect(() => {
@@ -46,6 +48,13 @@ export function BaseAgentWorkspace({ agent, MainContent }: BaseAgentWorkspacePro
   useHideCopilotBanner()
   useChatStyles()
   useAutoScroll('.w-\\[550px\\]')
+  useQuickActionsInjection({ actions: agent.actions, themeColor })
+  useChatHistory({
+    agentId: agent.id,
+    agentName: agent.name,
+    agentColor: themeColor,
+    sessionId,
+  })
 
   const ContentComponent = MainContent || DefaultMainContent
 
@@ -65,17 +74,18 @@ export function BaseAgentWorkspace({ agent, MainContent }: BaseAgentWorkspacePro
               setThemeColor={setThemeColor}
             />
           </div>
-          {/* Chat Panel */}
-          <div className="w-[550px] border-l border-gray-200 flex flex-col">
-            <CopilotChat
-              labels={{
-                title: agent.name,
-                initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
-              }}
-              instructions={`You are ${agent.name}. ${agent.description}`}
-              className="flex-1"
-            />
-            <QuickActionButtons actions={agent.actions} themeColor={themeColor} />
+          {/* Chat Panel with Scrollbar - Quick actions injected via hook above input */}
+          <div className="w-[550px] border-l border-gray-200 flex flex-col overflow-hidden chat-panel-container">
+            <div className="flex-1 overflow-y-auto chat-panel-scrollable">
+              <CopilotChat
+                labels={{
+                  title: agent.name,
+                  initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
+                }}
+                instructions={`You are ${agent.name}. ${agent.description}`}
+                className="h-full"
+              />
+            </div>
           </div>
         </div>
       </div>

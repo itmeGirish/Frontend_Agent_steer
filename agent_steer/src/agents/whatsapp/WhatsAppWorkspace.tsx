@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CopilotKit } from '@copilotkit/react-core'
 import { CopilotChat, type CopilotKitCSSProperties } from '@copilotkit/react-ui'
 import { useFrontendTool } from '@copilotkit/react-core'
@@ -8,13 +9,15 @@ import type { AgentConfig } from '../types'
 import {
   AgentHeader,
   AgentActionButton,
-  QuickActionButtons,
   useHideCopilotBanner,
   useAutoScroll,
   useChatStyles,
+  useQuickActionsInjection,
+  useChatHistory,
   sendMessageToChat,
 } from '../shared'
 import { useJobApplicationWorkflow } from './workflows'
+import { WhatsAppSidebar } from './components'
 
 interface WhatsAppWorkspaceProps {
   agent: AgentConfig
@@ -32,6 +35,8 @@ function getThemeColor(agent: AgentConfig): string {
 }
 
 export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
+  const [searchParams] = useSearchParams()
+  const sessionId = searchParams.get('session')
   const [themeColor, setThemeColor] = useState(getThemeColor(agent))
 
   useEffect(() => {
@@ -42,34 +47,48 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
   useHideCopilotBanner()
   useChatStyles()
   useAutoScroll('.w-\\[550px\\]')
+  useQuickActionsInjection({ actions: agent.actions, themeColor })
+  useChatHistory({
+    agentId: agent.id,
+    agentName: agent.name,
+    agentColor: themeColor,
+    sessionId,
+  })
 
   return (
     <CopilotKit runtimeUrl="/api/copilotkit" agent={agent.copilotAgentName}>
       <div
         style={{ '--copilot-kit-primary-color': themeColor } as CopilotKitCSSProperties}
-        className="h-screen flex flex-col bg-white"
+        className="h-screen flex bg-white"
       >
-        <AgentHeader agent={agent} />
-        <div className="flex-1 flex overflow-hidden">
-          {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            <WhatsAppMainContent
-              agent={agent}
-              themeColor={themeColor}
-              setThemeColor={setThemeColor}
-            />
-          </div>
-          {/* Chat Panel */}
-          <div className="w-[550px] border-l border-gray-200 flex flex-col">
-            <CopilotChat
-              labels={{
-                title: agent.name,
-                initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
-              }}
-              instructions={`You are ${agent.name}. ${agent.description}`}
-              className="flex-1"
-            />
-            <QuickActionButtons actions={agent.actions} themeColor={themeColor} />
+        {/* Left Sidebar with Icons and Chat History */}
+        <WhatsAppSidebar agentId={agent.id} themeColor={themeColor} />
+
+        {/* Main Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AgentHeader agent={agent} />
+          <div className="flex-1 flex overflow-hidden">
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-y-auto">
+              <WhatsAppMainContent
+                agent={agent}
+                themeColor={themeColor}
+                setThemeColor={setThemeColor}
+              />
+            </div>
+            {/* Chat Panel with Scrollbar - Quick actions injected via hook above input */}
+            <div className="w-[550px] border-l border-gray-200 flex flex-col overflow-hidden chat-panel-container">
+              <div className="flex-1 overflow-y-auto chat-panel-scrollable">
+                <CopilotChat
+                  labels={{
+                    title: agent.name,
+                    initial: `Hi! I'm your ${agent.name}. ${agent.description}`,
+                  }}
+                  instructions={`You are ${agent.name}. ${agent.description}`}
+                  className="h-full"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
