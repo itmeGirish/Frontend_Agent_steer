@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CopilotKit } from '@copilotkit/react-core'
 import { CopilotChat, type CopilotKitCSSProperties } from '@copilotkit/react-ui'
 import { useFrontendTool } from '@copilotkit/react-core'
+import { createRoot, type Root } from 'react-dom/client'
 import '@copilotkit/react-ui/styles.css'
 
 import type { AgentConfig } from '../types'
@@ -12,12 +13,19 @@ import {
   useHideCopilotBanner,
   useAutoScroll,
   useChatStyles,
-  useQuickActionsInjection,
   useChatHistory,
   sendMessageToChat,
 } from '../shared'
 import { useJobApplicationWorkflow } from './workflows'
-import { WhatsAppSidebar } from './components'
+import {
+  WhatsAppSidebar,
+  DashboardPage,
+  BroadcastingPage,
+  OnboardingPage,
+  ProactiveAgentsPage,
+  ContentCreationPage,
+  type FeatureId
+} from './components'
 
 interface WhatsAppWorkspaceProps {
   agent: AgentConfig
@@ -34,10 +42,173 @@ function getThemeColor(agent: AgentConfig): string {
   return colorMap[agent.color] || '#22c55e'
 }
 
+// Hook to inject onboarding button above chat input
+function useOnboardingButtonInjection(activeFeature: FeatureId, themeColor: string) {
+  const rootRef = useRef<Root | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const injectButton = () => {
+      const inputContainer = document.querySelector('.copilotKitInput')
+      if (!inputContainer) return
+
+      // Remove existing container if feature changed
+      if (containerRef.current && inputContainer.parentElement?.contains(containerRef.current)) {
+        if (activeFeature !== 'onboarding') {
+          // Remove the button if not on onboarding page
+          if (rootRef.current) {
+            rootRef.current.unmount()
+            rootRef.current = null
+          }
+          containerRef.current.remove()
+          containerRef.current = null
+          return
+        }
+        // Update existing content
+        if (rootRef.current) {
+          rootRef.current.render(
+            <OnboardingButtonContent themeColor={themeColor} />
+          )
+        }
+        return
+      }
+
+      // Only inject if on onboarding page
+      if (activeFeature !== 'onboarding') return
+
+      // Create container for button
+      const buttonContainer = document.createElement('div')
+      buttonContainer.className = 'onboarding-button-injected'
+      containerRef.current = buttonContainer
+
+      // Insert before the input container
+      inputContainer.parentElement?.insertBefore(buttonContainer, inputContainer)
+
+      // Create React root and render
+      const root = createRoot(buttonContainer)
+      rootRef.current = root
+      root.render(
+        <OnboardingButtonContent themeColor={themeColor} />
+      )
+    }
+
+    // Try to inject immediately
+    injectButton()
+
+    // Also try after a delay
+    const timeoutId = setTimeout(injectButton, 500)
+
+    // Use MutationObserver to detect changes
+    const observer = new MutationObserver(() => {
+      injectButton()
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+
+    return () => {
+      clearTimeout(timeoutId)
+      observer.disconnect()
+      if (rootRef.current) {
+        rootRef.current.unmount()
+        rootRef.current = null
+      }
+      if (containerRef.current && containerRef.current.parentElement) {
+        containerRef.current.parentElement.removeChild(containerRef.current)
+        containerRef.current = null
+      }
+    }
+  }, [activeFeature, themeColor])
+}
+
+// Onboarding button component
+function OnboardingButtonContent({ themeColor }: { themeColor: string }) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleOnboardingClick = () => {
+    if (isLoading) return
+
+    console.log('[OnboardingButton] Button clicked, sending message to chat...')
+    setIsLoading(true)
+
+    // Show loading indicator in chat area
+    const messagesContainer = document.querySelector('.copilotKitMessages')
+    if (messagesContainer) {
+      const loadingDiv = document.createElement('div')
+      loadingDiv.className = 'copilotKitTypingIndicator'
+      loadingDiv.id = 'onboarding-loading'
+      loadingDiv.innerHTML = '<span></span><span></span><span></span>'
+      messagesContainer.appendChild(loadingDiv)
+      messagesContainer.scrollTop = messagesContainer.scrollHeight
+    }
+
+    sendMessageToChat('Start user onboarding process')
+
+    // Reset loading state after a delay (response should come before this)
+    setTimeout(() => {
+      setIsLoading(false)
+      const loadingEl = document.getElementById('onboarding-loading')
+      if (loadingEl) loadingEl.remove()
+    }, 30000)
+  }
+
+  return (
+    <div className="px-3 py-2 bg-white border-t border-gray-100">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        <button
+          onClick={handleOnboardingClick}
+          disabled={isLoading}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '9999px',
+            fontSize: '12px',
+            fontWeight: 500,
+            transition: 'all 0.2s',
+            backgroundColor: isLoading ? '#e5e7eb' : `${themeColor}15`,
+            color: isLoading ? '#9ca3af' : themeColor,
+            border: 'none',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => !isLoading && (e.currentTarget.style.opacity = '0.8')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          {isLoading && (
+            <span style={{
+              width: '12px',
+              height: '12px',
+              border: '2px solid #d1d5db',
+              borderTopColor: themeColor,
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }} />
+          )}
+          {isLoading ? 'Starting...' : 'Onboarding'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Component to register workflow tools - always rendered inside CopilotKit
+// Note: Onboarding workflow hooks are now in OnboardingPage component
+function WorkflowToolsProvider({ themeColor, agentId }: { themeColor: string; agentId: string }) {
+  console.log('[WorkflowToolsProvider] Registering workflow tools for agent:', agentId)
+  // Register job application workflow (onboarding is handled by OnboardingPage)
+  useJobApplicationWorkflow(themeColor, agentId)
+  console.log('[WorkflowToolsProvider] Workflow tools registered')
+  return null
+}
+
 export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session')
   const [themeColor, setThemeColor] = useState(getThemeColor(agent))
+  const [activeFeature, setActiveFeature] = useState<FeatureId>('dashboard')
 
   useEffect(() => {
     setThemeColor(getThemeColor(agent))
@@ -47,7 +218,6 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
   useHideCopilotBanner()
   useChatStyles()
   useAutoScroll('.w-\\[550px\\]')
-  useQuickActionsInjection({ actions: agent.actions, themeColor })
   useChatHistory({
     agentId: agent.id,
     agentName: agent.name,
@@ -55,28 +225,60 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
     sessionId,
   })
 
+  // Inject onboarding button only when on onboarding page
+  useOnboardingButtonInjection(activeFeature, themeColor)
+
+  // Render the appropriate content based on active feature
+  const renderMainContent = () => {
+    switch (activeFeature) {
+      case 'dashboard':
+        return <DashboardPage themeColor={themeColor} />
+      case 'broadcast':
+        return <BroadcastingPage themeColor={themeColor} />
+      case 'onboarding':
+        return <OnboardingPage themeColor={themeColor} />
+      case 'proactive':
+        return <ProactiveAgentsPage themeColor={themeColor} />
+      case 'content':
+        return <ContentCreationPage themeColor={themeColor} />
+      case 'home':
+      default:
+        return (
+          <WhatsAppMainContent
+            agent={agent}
+            themeColor={themeColor}
+            setThemeColor={setThemeColor}
+          />
+        )
+    }
+  }
+
   return (
     <CopilotKit runtimeUrl="/api/copilotkit" agent={agent.copilotAgentName}>
+      {/* Register workflow tools - always active */}
+      <WorkflowToolsProvider themeColor={themeColor} agentId={agent.id} />
+
       <div
         style={{ '--copilot-kit-primary-color': themeColor } as CopilotKitCSSProperties}
         className="h-screen flex bg-white"
       >
         {/* Left Sidebar with Icons and Chat History */}
-        <WhatsAppSidebar agentId={agent.id} themeColor={themeColor} />
+        <WhatsAppSidebar
+          agentId={agent.id}
+          themeColor={themeColor}
+          activeFeature={activeFeature}
+          onFeatureChange={setActiveFeature}
+        />
 
         {/* Main Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <AgentHeader agent={agent} />
           <div className="flex-1 flex overflow-hidden">
-            {/* Main Content Area */}
+            {/* Main Content Area - Changes based on selected feature */}
             <div className="flex-1 overflow-y-auto">
-              <WhatsAppMainContent
-                agent={agent}
-                themeColor={themeColor}
-                setThemeColor={setThemeColor}
-              />
+              {renderMainContent()}
             </div>
-            {/* Chat Panel with Scrollbar - Quick actions injected via hook above input */}
+            {/* Chat Panel with Scrollbar - Always visible */}
             <div className="w-[550px] border-l border-gray-200 flex flex-col overflow-hidden chat-panel-container">
               <div className="flex-1 overflow-y-auto chat-panel-scrollable">
                 <CopilotChat
@@ -114,8 +316,7 @@ function WhatsAppMainContent({ agent, themeColor, setThemeColor }: WhatsAppMainC
     },
   })
 
-  // Register WhatsApp-specific workflow tools
-  useJobApplicationWorkflow(themeColor, agent.id)
+  // Note: Workflow tools are registered in WorkflowToolsProvider (always active)
 
   const handleActionClick = (prompt: string) => {
     sendMessageToChat(prompt)

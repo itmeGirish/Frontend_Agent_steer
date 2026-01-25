@@ -18,22 +18,28 @@ import {
   Users,
   CheckSquare,
   Settings,
-  HelpCircle
+  HelpCircle,
+  UserPlus
 } from 'lucide-react'
 import type { ChatSession } from '@/agent-hub'
 import { deleteChatSession, getChatSessionsByAgent } from '@/agent-hub'
 
+export type FeatureId = 'home' | 'dashboard' | 'broadcast' | 'onboarding' | 'proactive' | 'content'
+
 interface WhatsAppSidebarProps {
   agentId: string
   themeColor: string
+  activeFeature: FeatureId
+  onFeatureChange: (featureId: FeatureId) => void
 }
 
 // Feature items for the icon bar
 const features = [
-  { id: 'broadcast', icon: Megaphone, label: 'Broadcasting Campaign' },
-  { id: 'proactive', icon: Bot, label: 'Proactive Agents' },
-  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboards' },
-  { id: 'content', icon: PenTool, label: 'Content Creation Agent' },
+  { id: 'dashboard' as FeatureId, icon: LayoutDashboard, label: 'Dashboard' },
+  { id: 'broadcast' as FeatureId, icon: Megaphone, label: 'Broadcasting Campaign' },
+  { id: 'onboarding' as FeatureId, icon: UserPlus, label: 'Onboarding' },
+  { id: 'proactive' as FeatureId, icon: Bot, label: 'Proactive Agents' },
+  { id: 'content' as FeatureId, icon: PenTool, label: 'Content Creation Agent' },
 ]
 
 // Icon mapping for chat sessions
@@ -54,7 +60,7 @@ function getSessionIcon(session: ChatSession) {
   return MessageSquare
 }
 
-export function WhatsAppSidebar({ agentId, themeColor }: WhatsAppSidebarProps) {
+export function WhatsAppSidebar({ agentId, themeColor, activeFeature, onFeatureChange }: WhatsAppSidebarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -84,6 +90,10 @@ export function WhatsAppSidebar({ agentId, themeColor }: WhatsAppSidebarProps) {
 
   const handleHomeClick = () => {
     navigate('/hub')
+  }
+
+  const handleFeatureClick = (featureId: FeatureId) => {
+    onFeatureChange(featureId)
   }
 
   const formatDate = (timestamp: number) => {
@@ -122,10 +132,15 @@ export function WhatsAppSidebar({ agentId, themeColor }: WhatsAppSidebarProps) {
           <Home className="w-5 h-5" />
         </button>
 
-        {/* New Chat */}
+        {/* New Chat / Home View */}
         <button
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-          title="New Chat"
+          onClick={() => onFeatureChange('home')}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+            activeFeature === 'home'
+              ? 'bg-gray-700 text-white'
+              : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+          }`}
+          title="Home"
         >
           <Plus className="w-5 h-5" />
         </button>
@@ -150,7 +165,12 @@ export function WhatsAppSidebar({ agentId, themeColor }: WhatsAppSidebarProps) {
         {features.map((feature) => (
           <button
             key={feature.id}
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+            onClick={() => handleFeatureClick(feature.id)}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+              activeFeature === feature.id
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            }`}
             title={feature.label}
           >
             <feature.icon className="w-5 h-5" />

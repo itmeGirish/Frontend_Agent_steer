@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 /**
- * Hook to apply custom chat styles including scrollbar
+ * Hook to apply custom chat styles including scrollbar and loading indicator
  */
 export function useChatStyles() {
   useEffect(() => {
@@ -13,6 +13,86 @@ export function useChatStyles() {
       }
       .copilotKitMessage {
         max-width: 85%;
+      }
+
+      /* Loading indicator - three dots animation */
+      .copilotKitAssistantMessage[data-loading="true"]::after,
+      .copilotKitResponseInProgress::after,
+      [class*="loading"]::after,
+      [class*="Loading"]::after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        animation: loadingDots 1.4s infinite;
+      }
+
+      @keyframes loadingDots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+      }
+
+      /* Typing indicator styles */
+      .copilotKitTypingIndicator,
+      [class*="typing"],
+      [class*="Typing"] {
+        display: flex !important;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 16px;
+        background: #f3f4f6;
+        border-radius: 18px;
+        margin: 8px 0;
+      }
+
+      .copilotKitTypingIndicator span,
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: #9ca3af;
+        border-radius: 50%;
+        animation: typingBounce 1.4s infinite ease-in-out;
+      }
+
+      .copilotKitTypingIndicator span:nth-child(1) { animation-delay: 0s; }
+      .copilotKitTypingIndicator span:nth-child(2) { animation-delay: 0.2s; }
+      .copilotKitTypingIndicator span:nth-child(3) { animation-delay: 0.4s; }
+
+      @keyframes typingBounce {
+        0%, 60%, 100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+
+      /* Ensure loading states are visible */
+      [data-status="loading"],
+      [data-state="loading"],
+      .is-loading {
+        position: relative;
+      }
+
+      [data-status="loading"]::before,
+      [data-state="loading"]::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #e5e7eb;
+        border-top-color: var(--copilot-kit-primary-color, #22c55e);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
       }
 
       /* Custom scrollbar for chat panel */
