@@ -21,6 +21,7 @@ import {
   WhatsAppSidebar,
   DashboardPage,
   BroadcastingPage,
+  BroadcastingCampaignPage,
   OnboardingPage,
   ProactiveAgentsPage,
   ContentCreationPage,
@@ -194,6 +195,141 @@ function OnboardingButtonContent({ themeColor }: { themeColor: string }) {
   )
 }
 
+// Hook to inject broadcasting button above chat input
+function useBroadcastingButtonInjection(activeFeature: FeatureId, themeColor: string) {
+  const rootRef = useRef<Root | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const injectButton = () => {
+      const inputContainer = document.querySelector('.copilotKitInput')
+      if (!inputContainer) return
+
+      if (containerRef.current && inputContainer.parentElement?.contains(containerRef.current)) {
+        if (activeFeature !== 'broadcast') {
+          if (rootRef.current) {
+            rootRef.current.unmount()
+            rootRef.current = null
+          }
+          containerRef.current.remove()
+          containerRef.current = null
+          return
+        }
+        if (rootRef.current) {
+          rootRef.current.render(
+            <BroadcastingButtonContent themeColor={themeColor} />
+          )
+        }
+        return
+      }
+
+      if (activeFeature !== 'broadcast') return
+
+      const buttonContainer = document.createElement('div')
+      buttonContainer.className = 'broadcasting-button-injected'
+      containerRef.current = buttonContainer
+
+      inputContainer.parentElement?.insertBefore(buttonContainer, inputContainer)
+
+      const root = createRoot(buttonContainer)
+      rootRef.current = root
+      root.render(
+        <BroadcastingButtonContent themeColor={themeColor} />
+      )
+    }
+
+    injectButton()
+    const timeoutId = setTimeout(injectButton, 500)
+
+    const observer = new MutationObserver(() => {
+      injectButton()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      clearTimeout(timeoutId)
+      observer.disconnect()
+      if (rootRef.current) {
+        rootRef.current.unmount()
+        rootRef.current = null
+      }
+      if (containerRef.current && containerRef.current.parentElement) {
+        containerRef.current.parentElement.removeChild(containerRef.current)
+        containerRef.current = null
+      }
+    }
+  }, [activeFeature, themeColor])
+}
+
+// Broadcasting button component
+function BroadcastingButtonContent({ themeColor }: { themeColor: string }) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleBroadcastingClick = () => {
+    if (isLoading) return
+
+    console.log('[BroadcastingButton] Button clicked, sending message to chat...')
+    setIsLoading(true)
+
+    const messagesContainer = document.querySelector('.copilotKitMessages')
+    if (messagesContainer) {
+      const loadingDiv = document.createElement('div')
+      loadingDiv.className = 'copilotKitTypingIndicator'
+      loadingDiv.id = 'broadcasting-loading'
+      loadingDiv.innerHTML = '<span></span><span></span><span></span>'
+      messagesContainer.appendChild(loadingDiv)
+      messagesContainer.scrollTop = messagesContainer.scrollHeight
+    }
+
+    sendMessageToChat('Start broadcasting campaign')
+
+    setTimeout(() => {
+      setIsLoading(false)
+      const loadingEl = document.getElementById('broadcasting-loading')
+      if (loadingEl) loadingEl.remove()
+    }, 30000)
+  }
+
+  return (
+    <div className="px-3 py-2 bg-white border-t border-gray-100">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        <button
+          onClick={handleBroadcastingClick}
+          disabled={isLoading}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '9999px',
+            fontSize: '12px',
+            fontWeight: 500,
+            transition: 'all 0.2s',
+            backgroundColor: isLoading ? '#e5e7eb' : `${themeColor}15`,
+            color: isLoading ? '#9ca3af' : themeColor,
+            border: 'none',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => !isLoading && (e.currentTarget.style.opacity = '0.8')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          {isLoading && (
+            <span style={{
+              width: '12px',
+              height: '12px',
+              border: '2px solid #d1d5db',
+              borderTopColor: themeColor,
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }} />
+          )}
+          {isLoading ? 'Starting...' : 'New Campaign'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Component to register workflow tools - always rendered inside CopilotKit
 // Note: Onboarding workflow hooks are now in OnboardingPage component
 function WorkflowToolsProvider({ themeColor, agentId }: { themeColor: string; agentId: string }) {
@@ -228,13 +364,16 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
   // Inject onboarding button only when on onboarding page
   useOnboardingButtonInjection(activeFeature, themeColor)
 
+  // Inject broadcasting button only when on broadcast page
+  useBroadcastingButtonInjection(activeFeature, themeColor)
+
   // Render the appropriate content based on active feature
   const renderMainContent = () => {
     switch (activeFeature) {
       case 'dashboard':
         return <DashboardPage themeColor={themeColor} />
       case 'broadcast':
-        return <BroadcastingPage themeColor={themeColor} />
+        return <BroadcastingCampaignPage themeColor={themeColor} />
       case 'onboarding':
         return <OnboardingPage themeColor={themeColor} />
       case 'proactive':

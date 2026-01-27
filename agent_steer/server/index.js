@@ -28,12 +28,17 @@ function createRuntime() {
   return new CopilotRuntime({
     agents: {
       sample_agent: new LangGraphAgent({
-        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:8124',
+        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:8123',
         graphId: 'sample_agent',
         langsmithApiKey: process.env.LANGSMITH_API_KEY || '',
         streamTimeout: 60000,
-        // Try events mode to see if it properly formats streaming data
-        // Events mode streams all LangGraph events including messages
+        streamMode: 'events',
+      }),
+      broadcasting_agent: new LangGraphAgent({
+        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:8123',
+        graphId: 'broadcasting_agent',
+        langsmithApiKey: process.env.LANGSMITH_API_KEY || '',
+        streamTimeout: 60000,
         streamMode: 'events',
       }),
     },
@@ -48,7 +53,7 @@ app.get('/health', (_req, res) => {
 // Info endpoint for CopilotKit
 app.get('/info', (_req, res) => {
   res.json({
-    agents: ['sample_agent'],
+    agents: ['sample_agent', 'broadcasting_agent'],
     version: '1.0.0',
   });
 });
@@ -106,5 +111,5 @@ app.all('*', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 CopilotKit runtime server running on http://localhost:${PORT}`);
-  console.log(`📡 LangGraph agent URL: ${process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:2024'}`);
+  console.log(`📡 LangGraph agent URL: ${process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:8123'}`);
 });
