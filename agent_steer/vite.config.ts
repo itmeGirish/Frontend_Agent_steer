@@ -11,6 +11,9 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5173,
+    strictPort: false,
+    open: true,
     proxy: {
       // Proxy CopilotKit requests to local CopilotKit runtime server (connects to LangGraph at 8123)
       '/api/copilotkit': {

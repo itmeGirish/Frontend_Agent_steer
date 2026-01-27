@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import {
   Bot,
-  Play,
-  Pause,
   Settings,
   Plus,
   Search,
   Clock,
   MessageSquare,
-  Users,
   Zap,
   ToggleLeft,
   ToggleRight,

@@ -15,6 +15,108 @@ export function useChatStyles() {
         max-width: 85%;
       }
 
+      /* Markdown styling for AI messages */
+      .copilotKitMarkdown,
+      .copilotKitAssistantMessage p,
+      .copilotKitAssistantMessage {
+        line-height: 1.6;
+      }
+
+      .copilotKitMarkdown a,
+      .copilotKitAssistantMessage a {
+        color: #2563eb;
+        text-decoration: underline;
+        font-weight: 500;
+      }
+
+      .copilotKitMarkdown a:hover,
+      .copilotKitAssistantMessage a:hover {
+        color: #1d4ed8;
+      }
+
+      .copilotKitMarkdown strong,
+      .copilotKitAssistantMessage strong {
+        font-weight: 600;
+      }
+
+      .copilotKitMarkdown em,
+      .copilotKitAssistantMessage em {
+        font-style: italic;
+      }
+
+      .copilotKitMarkdown code,
+      .copilotKitAssistantMessage code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+      }
+
+      .copilotKitMarkdown pre,
+      .copilotKitAssistantMessage pre {
+        background: #1f2937;
+        color: #f9fafb;
+        padding: 12px 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 8px 0;
+      }
+
+      .copilotKitMarkdown pre code,
+      .copilotKitAssistantMessage pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+
+      .copilotKitMarkdown ul,
+      .copilotKitAssistantMessage ul {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin: 8px 0;
+      }
+
+      .copilotKitMarkdown ol,
+      .copilotKitAssistantMessage ol {
+        list-style-type: decimal;
+        padding-left: 20px;
+        margin: 8px 0;
+      }
+
+      .copilotKitMarkdown li,
+      .copilotKitAssistantMessage li {
+        margin: 4px 0;
+      }
+
+      .copilotKitMarkdown h1,
+      .copilotKitMarkdown h2,
+      .copilotKitMarkdown h3,
+      .copilotKitAssistantMessage h1,
+      .copilotKitAssistantMessage h2,
+      .copilotKitAssistantMessage h3 {
+        font-weight: 600;
+        margin: 12px 0 8px 0;
+      }
+
+      .copilotKitMarkdown h1 { font-size: 1.25em; }
+      .copilotKitMarkdown h2 { font-size: 1.15em; }
+      .copilotKitMarkdown h3 { font-size: 1.05em; }
+
+      .copilotKitMarkdown blockquote,
+      .copilotKitAssistantMessage blockquote {
+        border-left: 4px solid #d1d5db;
+        padding-left: 12px;
+        margin: 8px 0;
+        color: #6b7280;
+      }
+
+      .copilotKitMarkdown hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 16px 0;
+      }
+
       /* Loading indicator - three dots animation */
       .copilotKitAssistantMessage[data-loading="true"]::after,
       .copilotKitResponseInProgress::after,

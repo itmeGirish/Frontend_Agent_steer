@@ -28,7 +28,7 @@ function createRuntime() {
   return new CopilotRuntime({
     agents: {
       sample_agent: new LangGraphAgent({
-        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:2024',
+        deploymentUrl: process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://127.0.0.1:8124',
         graphId: 'sample_agent',
         langsmithApiKey: process.env.LANGSMITH_API_KEY || '',
         streamTimeout: 60000,
