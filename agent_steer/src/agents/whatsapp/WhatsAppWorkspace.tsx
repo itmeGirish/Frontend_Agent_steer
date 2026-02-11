@@ -17,10 +17,10 @@ import {
   sendMessageToChat,
 } from '../shared'
 import { useJobApplicationWorkflow } from './workflows'
+import { BROADCAST_USER_ID } from './config'
 import {
   WhatsAppSidebar,
   DashboardPage,
-  BroadcastingPage,
   BroadcastingCampaignPage,
   OnboardingPage,
   ProactiveAgentsPage,
@@ -281,7 +281,7 @@ function BroadcastingButtonContent({ themeColor }: { themeColor: string }) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight
     }
 
-    sendMessageToChat('Start broadcasting campaign')
+    sendMessageToChat(`Start broadcasting campaign user_id=${BROADCAST_USER_ID}`)
 
     setTimeout(() => {
       setIsLoading(false)
@@ -353,7 +353,7 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
   // Apply shared hooks
   useHideCopilotBanner()
   useChatStyles()
-  useAutoScroll('.w-\\[550px\\]')
+  useAutoScroll('.w-\\[400px\\]')
   useChatHistory({
     agentId: agent.id,
     agentName: agent.name,
@@ -392,8 +392,11 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
     }
   }
 
+  // Determine which backend agent to use based on active feature
+  const activeAgentName = activeFeature === 'broadcast' ? 'broadcasting_agent' : agent.copilotAgentName
+
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit" agent={agent.copilotAgentName}>
+    <CopilotKit key={activeAgentName} runtimeUrl="/api/copilotkit" agent={activeAgentName}>
       {/* Register workflow tools - always active */}
       <WorkflowToolsProvider themeColor={themeColor} agentId={agent.id} />
 
@@ -418,7 +421,7 @@ export function WhatsAppWorkspace({ agent }: WhatsAppWorkspaceProps) {
               {renderMainContent()}
             </div>
             {/* Chat Panel with Scrollbar - Always visible */}
-            <div className="w-[550px] border-l border-gray-200 flex flex-col overflow-hidden chat-panel-container">
+            <div className="w-[400px] border-l border-gray-200 flex flex-col overflow-hidden chat-panel-container">
               <div className="flex-1 overflow-y-auto chat-panel-scrollable">
                 <CopilotChat
                   labels={{

@@ -1,6 +1,9 @@
 import { MessageCircle, Users, FileEdit } from 'lucide-react'
 import type { AgentConfig } from '../types'
 
+// Single source of truth for broadcasting user ID — change here to update everywhere
+export const BROADCAST_USER_ID = 'user1'
+
 export const whatsappAgentConfig: AgentConfig = {
   id: 'whatsapp',
   name: 'WhatsApp Agent',
